@@ -100,8 +100,8 @@ data_rarified<- prune_taxa(taxa_sums(data_rarified) > 0, data_rarified)
 Crevicesdata<-subset_samples(data_rarified, Sample_Type == "Crevice")
 data_rarified=subset_samples(data_rarified, Repeat == "0")
 
-
-write_rds(data_rarified, file ="data_rarified.rds")
+#Create R datafile
+#write_rds(data_rarified, file ="data_rarified.rds")
 
 data_rarified <- merge_phyloseq(data_rarified,Crevicesdata)
 
