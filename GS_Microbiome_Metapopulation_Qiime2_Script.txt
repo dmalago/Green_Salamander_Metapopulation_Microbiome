@@ -1,0 +1,109 @@
+
+
+
+
+
+qsub -I -l select=1:ncpus=16:mem=60gb,walltime=16:00:00
+
+qsub -I -l select=1:ncpus=64:mem=120gb,walltime=8:00:00
+
+qsub -I -l select=1:ncpus=64:mem=360gb,walltime=16:00:00
+
+
+for big memory cores (can use 750 gbs memory)
+
+qsub -I -q bigmem -l select=1:ncpus=64:mem=750gb,walltime=16:00:00
+
+
+source /zfs/gcl/software/gbf/qiime/qiime2022.8.sh
+
+conda activate qiime2-2021.11
+
+
+
+########### Import data ##############
+
+qiime tools import \
+   --type 'SampleData[PairedEndSequencesWithQuality]' \
+   --input-path /home/dmalago/Green_Salamanders/Metapopulation/Fastq/ \
+   --input-format CasavaOneEightLanelessPerSampleDirFmt \
+   --output-path demux-paired-end.qza
+
+
+qiime demux summarize \
+  --i-data demux-paired-end.qza \
+  --o-visualization demux-paired-end.qzv
+
+
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux-paired-end.qza \
+  --p-trim-left-f 19 \
+  --p-trim-left-r 20 \
+  --p-trunc-len-f 225 \
+  --p-trunc-len-r 225 \
+  --o-table table.qza \
+  --o-representative-sequences rep-seqs.qza \
+  --o-denoising-stats denoising-stats.qza
+
+
+######################### Will create metadata table and help visualize your sequence info for the different samples, I am also adding the column of "location" to the metadata #############
+
+qiime metadata tabulate \
+  --m-input-file denoising-stats.qza \
+  --o-visualization stats-dada2.qzv
+
+#########################Create a feature table #############################
+qiime feature-table summarize \
+--i-table table.qza \
+--o-visualization table.qzv \
+--m-sample-metadata-file metadata.tsv
+
+qiime feature-table tabulate-seqs \
+--i-data rep-seqs.qza \
+--o-visualization rep-seqs.qzv
+
+#########################Generate phylogenetic tree for diversity analyses, will perform multiple sequence alignment of the sequences in the featuredata we created ################
+qiime phylogeny align-to-tree-mafft-fasttree \
+--i-sequences rep-seqs.qza \
+--o-alignment aligned-rep-seqs.qza \
+--o-masked-alignment masked-aligned-rep-seqs.qza \
+--o-tree unrooted-tree.qza \
+--o-rooted-tree rooted-tree.qza
+
+
+
+######### Classifying ASVs #####################
+
+qiime feature-classifier classify-sklearn \
+--i-classifier silva-138-99-515-806-nb-classifier.qza \
+--i-reads rep-seqs.qza \
+--o-classification taxonomy.qza
+
+
+
+
+###############   To View   ####################
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv
+
+
+################ Create Interactive Barplots #################
+qiime taxa barplot \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file metadata.tsv \
+  --o-visualization taxa-bar-plots.qzv
+
+
+
+#### Alpha and Beta Diversity Analyses ##########
+
+qiime diversity core-metrics-phylogenetic \
+--i-phylogeny rooted-tree.qza \
+--i-table table.qza \
+--p-sampling-depth 5000 \
+--m-metadata-file metadata.tsv \
+--output-dir core-metrics-results
+
+
