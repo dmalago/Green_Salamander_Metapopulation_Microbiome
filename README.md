@@ -4,12 +4,13 @@ This repository contains all data and code related to the publication, "Spatial 
 Fastq files are housed in NCBI SRA under accession number PRJNA1176676
 
 
-#To perform the analyses at the Genus taxonomic level, add the following line of code where appropriate.
+To perform the analyses at the Genus taxonomic level, add the following line of code where appropriate.
+
 data_rarified<-tax_glom(data_rarified, taxrank="Genus", NArm=TRUE, bad_empty=c(NA, "", " ", "\t"))
 
 
 To perform the analyses at the ASV level with all environmental microbiota removed, add the following lines of code where appropriate.
-#Removing ASVs found in Environment
+
 prune_negatives = function(physeq, negs, samps) {
   negs.n1 = prune_taxa(taxa_sums(negs)>=1, negs) 
   samps.n1 = prune_taxa(taxa_sums(samps)>=1, samps) 
