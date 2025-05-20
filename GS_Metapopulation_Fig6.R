@@ -42,6 +42,7 @@ library("corrplot")
 library(patchwork)
 library(data.table)
 library(DT)
+library(rlist)
 
 #SO = salamander only, SE = shared with environment, EO = environment only, ES = shared with salamanders, E = all environment, S = all salamander 
 
@@ -494,7 +495,7 @@ if (list_k<4){
 
 genetic_sites<-c('DNR','1251','1250','3688','1477','HW1')
 genetics_rarified<-prune_samples(sample_data(data_rarified)$Site %in% genetic_sites,data_rarified)
-Fst_dist<-read.csv("Fst_7.csv",row.names=1,header=TRUE)
+Fst_dist<-read.csv("Fst_6.csv",row.names=1,header=TRUE)
 
 colnames(Fst_dist)<-c('DNR','1251','1250','3688','HW1','1477')
 rownames(Fst_dist)<-c('DNR','1251','1250','3688','HW1','1477')
